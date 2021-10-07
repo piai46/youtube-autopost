@@ -1,4 +1,4 @@
-import pytube, os, json, requests
+import pytube, os, json, requests, datetime
 from PIL import Image
 from time import sleep
 from selenium import webdriver
@@ -7,9 +7,9 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 from pathlib import Path
 
-MOZILLA_PROFILE_PATH = 'C:\\Users\\Luis\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\1nz1cfe7.Channel Sports' # Find your mozilla profile path and put here
-CHANNEL = 'https://www.youtube.com/channel/UCKZZlda0YgSfEnV8WNWDJCA/videos' # Channel to download videos
-AMOUNT_VIDEO = 4 # Video amount to download
+MOZILLA_PROFILE_PATH = 'path\\to\\mozilla\\profile\\folder' # Find your mozilla profile path and put here
+CHANNEL = 'https://www.youtube.com/channel/' # Channel to download videos
+AMOUNT_VIDEO = 3 # Video amount to download
 TIME_BETWEEN_POSTS = 3600 # The time between the videos will be post | Time in seconds: 3600 = 1 hour
 
 class YoutubePost:
@@ -21,7 +21,7 @@ class YoutubePost:
         for video_url in channel.video_urls[0:AMOUNT_VIDEO]:
             yield video_url
 
-    def get_infos(self, video_url):
+    def get_infos(self, video_url, hour_post, date_post):
         video = pytube.YouTube(video_url)
         video_info = {
             'video':video,
@@ -29,7 +29,9 @@ class YoutubePost:
             'video_thumb':video.thumbnail_url,
             'video_desc':video.description,
             'video_tags':video.keywords,
-            'video_url':video_url
+            'video_url':video_url,
+            'hour_post':hour_post,
+            'date_post':date_post
         }
         return video_info
 
@@ -49,7 +51,9 @@ class YoutubePost:
     def change_res_thumb(self, image_path, filename):
         i = Image.open(image_path)
         i_resized = i.resize(size=(1280,720))
-        i_resized.save(f'./videos/{filename}/{filename}.jpg')
+        i_resized.save(f'./videos/{filename}/{filename}.jpeg')
+        i.close()
+        os.remove(f'./videos/{filename}/{filename}_thumb.jpg')
         print('Thumb resized to 1280x720')
 
     def download_and_save(self, infos):
@@ -75,7 +79,7 @@ class YoutubePost:
                     informations = file_to_upload
                 if file_to_upload.endswith('.mp4'):
                     video = file_to_upload
-                if file_to_upload.endswith('.jpg'):
+                if file_to_upload.endswith('.jpeg'):
                     thumb = file_to_upload
             return {
                 'info':f'\\videos\\{directory_name}\\{informations}', 
@@ -87,10 +91,26 @@ class YoutubePost:
             data = json.load(f)
             return data
 
+    def get_hour_xpath(self, input_hour):
+        hour_xpath = dict()
+        xpath_time = 0
+        for hour in range(24):
+            if hour == 0:
+                hour = '00'
+            for minute in range(0, 46, 15):
+                if minute == 0:
+                    minute = '00'
+                xpath_time += 1
+                hour_xpath.update({f'{hour}:{minute}':f'/html/body/ytcp-time-of-day-picker/tp-yt-paper-dialog/div/div[2]/tp-yt-paper-listbox/tp-yt-paper-item[{xpath_time}]'})
+        return hour_xpath[input_hour]
+
     def open_firefox(self, infos):
         video_path = f'{str(Path.cwd())}{infos["video"]}'
         thumb_path = f'{str(Path.cwd())}{infos["thumb"]}'
         info = self.open_informations(infos['info'])
+        date_to_post = info['date_post']
+        hour_to_post = info['hour_post']
+        hour_xpath = self.get_hour_xpath(hour_to_post)
         #################
         #Options
         profile = webdriver.FirefoxProfile(MOZILLA_PROFILE_PATH)
@@ -99,7 +119,7 @@ class YoutubePost:
         profile.update_preferences()
         options = Options()
         #Hide/Unhide browser
-        #options.add_argument('--headless')
+        options.add_argument('--headless')
         driver = webdriver.Firefox(firefox_profile=profile, desired_capabilities=DesiredCapabilities.FIREFOX, options=options)
         ############
         print('Firefox open')
@@ -109,6 +129,7 @@ class YoutubePost:
         sleep(5)
         driver.find_element_by_xpath("//input[@type='file']").send_keys(video_path)
         sleep(5)
+        #Writing video title
         driver.find_element_by_id('textbox').send_keys(info['video_title'])
         print('Title writed')
         sleep(2)
@@ -135,27 +156,49 @@ class YoutubePost:
         sleep(1)
         driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[2]/div/div[2]/ytcp-button[2]').click()
         sleep(1)
-        driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-uploads-review/div[2]/div[1]/ytcp-video-visibility-select/div[1]/tp-yt-paper-radio-group/tp-yt-paper-radio-button[3]/div[1]').click()
+        #Clicking in schedule video
+        driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-uploads-review/div[2]/div[1]/ytcp-video-visibility-select/div[2]/tp-yt-paper-radio-button/div[1]/div[1]').click()
         sleep(1)
+        #Writing date
+        driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-uploads-review/div[2]/div[1]/ytcp-video-visibility-select/div[2]/ytcp-visibility-scheduler/div[1]/ytcp-datetime-picker/div/ytcp-text-dropdown-trigger[1]/ytcp-dropdown-trigger/div/div[3]').click()
+        sleep(1)
+        input_date = driver.find_element_by_xpath('/html/body/ytcp-date-picker/tp-yt-paper-dialog/div/form/tp-yt-paper-input/tp-yt-paper-input-container/div[2]/div/iron-input/input')
+        input_date.send_keys(Keys.CONTROL, 'a')
+        input_date.send_keys(date_to_post, Keys.ENTER)
+        sleep(1)
+        #Clicking on hour
+        driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-uploads-review/div[2]/div[1]/ytcp-video-visibility-select/div[2]/ytcp-visibility-scheduler/div[1]/ytcp-datetime-picker/div/ytcp-text-dropdown-trigger[2]/ytcp-dropdown-trigger/div/div[3]/tp-yt-iron-icon').click()
+        sleep(1)
+        driver.find_element_by_xpath(hour_xpath).click()
+        print(f'Programmed to {date_to_post} at {hour_to_post}')
+        sleep(1)
+        #Clicking on upload
         driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[2]/div/div[2]/ytcp-button[3]').click()
         sleep(2)
-        print('Video uploaded!')
+        print('Video uploaded!\n\n')
         driver.quit()
 
     def run(self):
         videos_urls = self.take_videos_url()
+        now = datetime.datetime.now()
+        video_number = 0
         for video in videos_urls:
-            video_info = self.get_infos(video)
+            video_number += 1
+            print(f'Video {video_number}')
+            now += datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
+            hour_to_post = now.strftime('%H:%M')
+            hour, minutes = hour_to_post.split(':')[0], int(hour_to_post.split(':')[1])
+            setting_minutes = minutes//15
+            minutes = setting_minutes * 15
+            if minutes == 0:
+                minutes = '00'
+            hour_to_post = f'{hour}:{minutes}'
+            date_to_post = now.strftime('%d/%m/%Y')
+            video_info = self.get_infos(video, hour_post=hour_to_post, date_post=date_to_post)
             directory_name = self.download_and_save(video_info)
-            self.open_firefox(directory_name)
-            print()
-
-    def test(self):
-        video_info = self.get_infos('https://www.youtube.com/watch?v=59VbzYwWh40')
-        directory_name = self.download_and_save(video_info)
-        informations_to_upload = self.infos_to_upload(directory_name)
-        self.open_firefox(informations_to_upload)
+            informations_to_upload = self.infos_to_upload(directory_name)
+            self.open_firefox(informations_to_upload)
 
 if __name__ == '__main__':
     yt = YoutubePost()
-    yt.test()
+    yt.run()
