@@ -1,7 +1,7 @@
 # Youtube auto post
 
 ## How to use:
-1 - Install Python and FirefoxInstalar Python e Firefox
+1 - Install Python and Firefox
 
 2 - Open CMD inside the folder that contain main.py and insert the following command: ```pip install -r requirements.txt```
 
