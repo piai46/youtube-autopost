@@ -1,6 +1,6 @@
 # Youtube auto post
 
-## How to use:
+## Setting up:
 1 - Install Python and Firefox
 
 2 - Open CMD inside the folder that contain main.py and insert the following command: ```pip install -r requirements.txt```
@@ -17,3 +17,7 @@
 7 - Change the value of ```AMOUNT_VIDEO``` to the last X videos that will be download
 
 8 - Change the value of ```TIME_BETWEEN_POSTS``` to the time beetween the videos posts (in seconds)
+
+## How to use:
+
+Open CMD inside the folder and run main.py
