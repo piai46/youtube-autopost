@@ -13,34 +13,38 @@ class YoutubePost:
         pass
 
     def take_videos_url(self):
-        channel = pytube.Channel(CHANNEL)
-        videos_url = []
-        for video_url in channel.video_urls[0:AMOUNT_VIDEO]:
-            videos_url.append(video_url)
-        return videos_url[::-1]
+        try:
+            channel = pytube.Channel(CHANNEL)
+            videos_url = []
+            for video_url in channel.video_urls[0:AMOUNT_VIDEO]:
+                videos_url.append(video_url)
+            return videos_url[::-1]
+        except:
+            return False
 
     def get_infos(self, video_url, hour_post, date_post):
         video = pytube.YouTube(video_url)
-        video_info = {
-            'video':video,
-            'video_title':video.title,
-            'video_thumb':video.thumbnail_url.replace('sddefault.jpg', 'maxresdefault.jpg'),
-            'video_desc':video.description,
-            'video_tags':video.keywords,
-            'video_url':video_url,
-            'hour_post':hour_post,
-            'date_post':date_post
-        }
-        return video_info
+        try:
+            video.check_availability()
+            video_info = {
+                'video':video,
+                'video_title':video.title,
+                'video_thumb':video.thumbnail_url.replace('sddefault.jpg', 'maxresdefault.jpg'),
+                'video_desc':video.description,
+                'video_tags':video.keywords,
+                'video_url':video_url,
+                'hour_post':hour_post,
+                'date_post':date_post
+            }
+            return video_info
+        except Exception as error:
+            print(f'Error: {error}\n')
+            return False
 
     def download_video(self, video, directory_name):
         print('Downloading video...')
-        try:
-            video.streams.get_highest_resolution().download(output_path=f'./videos/{directory_name}/', filename=f'{directory_name}.mp4')
-            print('Video downloaded!')
-        except:
-            print('Video cannot be downloaded because it\'s not available!\n')
-            return False
+        video.streams.get_highest_resolution().download(output_path=f'./videos/{directory_name}/', filename=f'{directory_name}.mp4')
+        print('Video downloaded!')
 
     def download_thumb(self, thumb_url, directory_name):
         r = requests.get(thumb_url, stream=True)
@@ -67,9 +71,7 @@ class YoutubePost:
         directory_name = f'youtube_{infos["video_url"].strip("https://www.youtube.com/watch?v=")}'
         if directory_name not in os.listdir('./videos/'):
             os.makedirs(f'./videos/{directory_name}')
-        video = self.download_video(infos['video'], directory_name)
-        if video == False:
-            return video
+        self.download_video(infos['video'], directory_name)
         self.download_thumb(infos['video_thumb'], directory_name)
         infos.pop('video')
         with open(f'./videos/{directory_name}/infos.json', 'w') as json_file:
@@ -200,20 +202,38 @@ class YoutubePost:
         return hour_to_post, date_to_post, now_date_hour
 
     def run(self):
-        videos_urls = self.take_videos_url()
         now = datetime.datetime.now()
         video_number = 0
-        for video in videos_urls:
-            video_number += 1
-            print(f'Video {video_number}')
-            hour_to_post, date_to_post, now = self.hour_and_date(now)
-            video_info = self.get_infos(video, hour_post=hour_to_post, date_post=date_to_post)
-            directory_name = self.download_and_save(video_info)
-            if directory_name == False:
-                now -= datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
-            else:
-                informations_to_upload = self.infos_to_upload(directory_name)
-                self.open_firefox(informations_to_upload)
+        videos_urls = self.take_videos_url()
+        if videos_urls != False:
+            for video in videos_urls:
+                video_number += 1
+                print(f'Video {video_number}')
+                hour_to_post, date_to_post, now = self.hour_and_date(now)
+                video_info = self.get_infos(video, hour_post=hour_to_post, date_post=date_to_post)  
+                if video_info == False:
+                    now -= datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
+                else:
+                    directory_name = self.download_and_save(video_info)
+                    informations_to_upload = self.infos_to_upload(directory_name)
+                    self.open_firefox(informations_to_upload)
+        elif videos_urls == False:
+            print('CHANNEL being skipped...')
+        if len(VIDEOS) > 0:
+            print('Getting video links from VIDEOS')
+            for video in VIDEOS:
+                video_number += 1
+                print(f'Video {video_number}')
+                hour_to_post, date_to_post, now = self.hour_and_date(now)
+                video_info = self.get_infos(video, hour_post=hour_to_post, date_post=date_to_post)
+                if video_info == False:
+                    now -= datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
+                else:
+                    directory_name = self.download_and_save(video_info)
+                    informations_to_upload = self.infos_to_upload(directory_name)
+                    self.open_firefox(informations_to_upload)
+        elif len(VIDEOS) == 0:
+            print('VIDEOS being skipped...')
 
 if __name__ == '__main__':
     yt = YoutubePost()

@@ -5,6 +5,9 @@ MOZILLA_PROFILE_PATH = 'C:\\path\\to\\mozilla\\profile\\folder'
 
 # Channel to download videos
 CHANNEL = 'https://www.youtube.com/channel/' 
+# Or 
+# Add video links, separating them with comma and in quotes
+VIDEOS = []
 
 # For the following variables, use 0 for not copy the video information and 1 for copy
 COPY_TITLE = 1 

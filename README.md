@@ -14,7 +14,7 @@
 5.1 - Go to ```C:\Users\username\AppData\Roaming\Mozilla\Firefox\Profiles``` and copy the path to your profile 
 Example: ```C:\Users\username\AppData\Roaming\Mozilla\Firefox\Profiles\sm1g0yf3.default-1631840458096A```. Change the value of ```MOZILLA_PROFILE_PATH``` to the profile folder path and replace ```\``` to ```\\```
 
-5.2 - Add the channel to download the videos in ```CHANNEL```
+5.2 - Add the channel to download the videos in ```CHANNEL``` or add the video link in ```VIDEOS``` list
 
 5.3 - If you want that bot write the video title, description or tags, you can change the value of ```COPY_TITLE``` to ```1```, ```COPY_DESC``` to ```1``` and ```COPY_TAGS``` to ```1```. The number ```1``` represents "Copy it" and ```0``` "Don't copy it"
 
