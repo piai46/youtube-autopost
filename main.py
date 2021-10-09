@@ -7,8 +7,8 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 from pathlib import Path
 
-MOZILLA_PROFILE_PATH = 'path\\to\\mozilla\\profile\\folder' # Find your mozilla profile path and put here
-CHANNEL = 'https://www.youtube.com/channel/' # Channel to download videos
+MOZILLA_PROFILE_PATH = 'C:\\Users\\Luis\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\sd637fl6.Channel Music' # Find your mozilla profile path and put here
+CHANNEL = 'https://www.youtube.com/channel/UCKZZlda0YgSfEnV8WNWDJCA/videos' # Channel to download videos
 AMOUNT_VIDEO = 3 # Video amount to download
 TIME_BETWEEN_POSTS = 3600 # The time between the videos will be post | Time in seconds: 3600 = 1 hour
 
@@ -18,15 +18,17 @@ class YoutubePost:
 
     def take_videos_url(self):
         channel = pytube.Channel(CHANNEL)
+        videos_url = []
         for video_url in channel.video_urls[0:AMOUNT_VIDEO]:
-            yield video_url
+            videos_url.append(video_url)
+        return videos_url[::-1]
 
     def get_infos(self, video_url, hour_post, date_post):
         video = pytube.YouTube(video_url)
         video_info = {
             'video':video,
             'video_title':video.title,
-            'video_thumb':video.thumbnail_url,
+            'video_thumb':video.thumbnail_url.replace('sddefault.jpg', 'maxresdefault.jpg'),
             'video_desc':video.description,
             'video_tags':video.keywords,
             'video_url':video_url,
@@ -36,6 +38,7 @@ class YoutubePost:
         return video_info
 
     def download_video(self, video, directory_name):
+        print('Downloading video...')
         video.streams.get_highest_resolution().download(output_path=f'./videos/{directory_name}/', filename=f'{directory_name}.mp4')
         print('Video downloaded!')
 
@@ -51,9 +54,9 @@ class YoutubePost:
     def change_res_thumb(self, image_path, filename):
         i = Image.open(image_path)
         i_resized = i.resize(size=(1280,720))
-        i_resized.save(f'./videos/{filename}/{filename}.jpeg')
+        i_resized.save(f'./videos/{filename}/{filename}.jpg')
         i.close()
-        os.remove(f'./videos/{filename}/{filename}_thumb.jpg')
+        #os.remove(f'./videos/{filename}/{filename}_thumb.jpg')
         print('Thumb resized to 1280x720')
 
     def download_and_save(self, infos):
@@ -79,7 +82,7 @@ class YoutubePost:
                     informations = file_to_upload
                 if file_to_upload.endswith('.mp4'):
                     video = file_to_upload
-                if file_to_upload.endswith('.jpeg'):
+                if file_to_upload.endswith('.jpg'):
                     thumb = file_to_upload
             return {
                 'info':f'\\videos\\{directory_name}\\{informations}', 
@@ -95,8 +98,8 @@ class YoutubePost:
         hour_xpath = dict()
         xpath_time = 0
         for hour in range(24):
-            if hour == 0:
-                hour = '00'
+            if hour < 10 and hour >= 0:
+                hour = f'0{hour}'
             for minute in range(0, 46, 15):
                 if minute == 0:
                     minute = '00'
@@ -124,7 +127,6 @@ class YoutubePost:
         ############
         print('Firefox open')
         driver.get('https://youtube.com/upload')
-        driver.maximize_window()
         print('Getting https://youtube.com/upload')
         sleep(5)
         driver.find_element_by_xpath("//input[@type='file']").send_keys(video_path)
@@ -178,6 +180,18 @@ class YoutubePost:
         print('Video uploaded!\n\n')
         driver.quit()
 
+    def hour_and_date(self, now_date_hour):
+        now_date_hour += datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
+        hour_to_post = now_date_hour.strftime('%H:%M')
+        hour, minutes = hour_to_post.split(':')[0], int(hour_to_post.split(':')[1])
+        setting_minutes = minutes//15
+        minutes = setting_minutes * 15
+        if minutes == 0:
+            minutes = '00'
+        hour_to_post = f'{hour}:{minutes}'
+        date_to_post = now_date_hour.strftime('%d/%m/%Y')
+        return hour_to_post, date_to_post
+
     def run(self):
         videos_urls = self.take_videos_url()
         now = datetime.datetime.now()
@@ -185,15 +199,7 @@ class YoutubePost:
         for video in videos_urls:
             video_number += 1
             print(f'Video {video_number}')
-            now += datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
-            hour_to_post = now.strftime('%H:%M')
-            hour, minutes = hour_to_post.split(':')[0], int(hour_to_post.split(':')[1])
-            setting_minutes = minutes//15
-            minutes = setting_minutes * 15
-            if minutes == 0:
-                minutes = '00'
-            hour_to_post = f'{hour}:{minutes}'
-            date_to_post = now.strftime('%d/%m/%Y')
+            hour_to_post, date_to_post = self.hour_and_date(now)
             video_info = self.get_infos(video, hour_post=hour_to_post, date_post=date_to_post)
             directory_name = self.download_and_save(video_info)
             informations_to_upload = self.infos_to_upload(directory_name)
