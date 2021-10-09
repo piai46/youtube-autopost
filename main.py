@@ -35,8 +35,12 @@ class YoutubePost:
 
     def download_video(self, video, directory_name):
         print('Downloading video...')
-        video.streams.get_highest_resolution().download(output_path=f'./videos/{directory_name}/', filename=f'{directory_name}.mp4')
-        print('Video downloaded!')
+        try:
+            video.streams.get_highest_resolution().download(output_path=f'./videos/{directory_name}/', filename=f'{directory_name}.mp4')
+            print('Video downloaded!')
+        except:
+            print('Video cannot be downloaded because it\'s not available!\n')
+            return False
 
     def download_thumb(self, thumb_url, directory_name):
         r = requests.get(thumb_url, stream=True)
@@ -46,13 +50,15 @@ class YoutubePost:
                 print('Thumb downloaded!')
                 f.close()
             self.change_res_thumb(f'./videos/{directory_name}/{directory_name}_thumb.jpg', directory_name)
+        else:
+            print(f'Error while downloading thumb - Status code {r.status_code}')
 
     def change_res_thumb(self, image_path, filename):
         i = Image.open(image_path)
         i_resized = i.resize(size=(1280,720))
         i_resized.save(f'./videos/{filename}/{filename}.jpg')
         i.close()
-        #os.remove(f'./videos/{filename}/{filename}_thumb.jpg')
+        os.remove(f'./videos/{filename}/{filename}_thumb.jpg')
         print('Thumb resized to 1280x720')
 
     def download_and_save(self, infos):
@@ -61,7 +67,9 @@ class YoutubePost:
         directory_name = f'youtube_{infos["video_url"].strip("https://www.youtube.com/watch?v=")}'
         if directory_name not in os.listdir('./videos/'):
             os.makedirs(f'./videos/{directory_name}')
-        self.download_video(infos['video'], directory_name)
+        video = self.download_video(infos['video'], directory_name)
+        if video == False:
+            return video
         self.download_thumb(infos['video_thumb'], directory_name)
         infos.pop('video')
         with open(f'./videos/{directory_name}/infos.json', 'w') as json_file:
@@ -189,7 +197,7 @@ class YoutubePost:
             minutes = '00'
         hour_to_post = f'{hour}:{minutes}'
         date_to_post = now_date_hour.strftime('%d/%m/%Y')
-        return hour_to_post, date_to_post
+        return hour_to_post, date_to_post, now_date_hour
 
     def run(self):
         videos_urls = self.take_videos_url()
@@ -198,11 +206,14 @@ class YoutubePost:
         for video in videos_urls:
             video_number += 1
             print(f'Video {video_number}')
-            hour_to_post, date_to_post = self.hour_and_date(now)
+            hour_to_post, date_to_post, now = self.hour_and_date(now)
             video_info = self.get_infos(video, hour_post=hour_to_post, date_post=date_to_post)
             directory_name = self.download_and_save(video_info)
-            informations_to_upload = self.infos_to_upload(directory_name)
-            self.open_firefox(informations_to_upload)
+            if directory_name == False:
+                now -= datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
+            else:
+                informations_to_upload = self.infos_to_upload(directory_name)
+                self.open_firefox(informations_to_upload)
 
 if __name__ == '__main__':
     yt = YoutubePost()
