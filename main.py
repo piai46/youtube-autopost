@@ -6,11 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 from pathlib import Path
-
-MOZILLA_PROFILE_PATH = 'C:\\Users\\Luis\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\sd637fl6.Channel Music' # Find your mozilla profile path and put here
-CHANNEL = 'https://www.youtube.com/channel/UCKZZlda0YgSfEnV8WNWDJCA/videos' # Channel to download videos
-AMOUNT_VIDEO = 3 # Video amount to download
-TIME_BETWEEN_POSTS = 3600 # The time between the videos will be post | Time in seconds: 3600 = 1 hour
+from setting_up import *
 
 class YoutubePost:
     def __init__(self) -> None:
@@ -131,14 +127,16 @@ class YoutubePost:
         sleep(5)
         driver.find_element_by_xpath("//input[@type='file']").send_keys(video_path)
         sleep(5)
-        #Writing video title
-        driver.find_element_by_id('textbox').send_keys(info['video_title'])
-        print('Title writed')
-        sleep(2)
-        #Writing video description
-        driver.find_elements_by_id('textbox')[1].send_keys(info['video_desc'])
-        print('Description writed')
-        sleep(2)
+        if COPY_TITLE == 1:
+            #Writing video title
+            driver.find_element_by_id('textbox').send_keys(info['video_title'])
+            print('Title writed')
+            sleep(2)
+        if COPY_DESC == 1:
+            #Writing video description
+            driver.find_elements_by_id('textbox')[1].send_keys(info['video_desc'])
+            print('Description writed')
+            sleep(2)
         #Adding thumb
         driver.find_element_by_xpath("//input[@id='file-loader']").send_keys(thumb_path)
         sleep(2)
@@ -148,10 +146,11 @@ class YoutubePost:
         sleep(1)
         tags = info['video_tags']
         input_tag = driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-video-metadata-editor/div/ytcp-video-metadata-editor-advanced/div[3]/ytcp-form-input-container/div[1]/div[2]/ytcp-free-text-chip-bar/ytcp-chip-bar/div/input')
-        print('Writing tags...')
-        for tag in tags:
-            input_tag.send_keys(f'{tag}', Keys.ENTER)
-            sleep(1)
+        if COPY_TAGS == 1:
+            print('Writing tags...')
+            for tag in tags:
+                input_tag.send_keys(f'{tag}', Keys.ENTER)
+                sleep(1)
         driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[2]/div/div[2]/ytcp-button[2]').click()
         sleep(1)
         driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[2]/div/div[2]/ytcp-button[2]').click()
