@@ -12,7 +12,7 @@
 5 - Open ```setting_up.py```
 
 5.1 - Go to ```C:\Users\username\AppData\Roaming\Mozilla\Firefox\Profiles``` and copy the path to your profile, like: 
-```C:\Users\username\AppData\Roaming\Mozilla\Firefox\Profiles\sm1g0yf3.default-1631840458096A``` Open setting_up.py, change the value of ```MOZILLA_PROFILE_PATH``` to the profile folder path and replace ```\``` to ```\\```
+```C:\Users\username\AppData\Roaming\Mozilla\Firefox\Profiles\sm1g0yf3.default-1631840458096A``` Open ```setting_up.py```, change the value of ```MOZILLA_PROFILE_PATH``` to the profile folder path and replace ```\``` to ```\\```
 
 5.2 - Add the channel to download the videos in ```CHANNEL```
 
