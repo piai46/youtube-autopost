@@ -19,3 +19,6 @@ AMOUNT_VIDEO = 5
 
 # The time between the videos will be post | Time in seconds: 3600 = 1 hour
 TIME_BETWEEN_POSTS = 3600 
+
+# Time before click on Upload Video | Time in seconds: 300 = 5 minutes
+TIME_BEFORE_UPLOAD = 300

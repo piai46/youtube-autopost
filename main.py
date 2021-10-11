@@ -29,7 +29,7 @@ class YoutubePost:
             video_info = {
                 'video':video,
                 'video_title':video.title,
-                'video_thumb':video.thumbnail_url.replace('sddefault.jpg', 'maxresdefault.jpg'),
+                'video_thumb':video.thumbnail_url,
                 'video_desc':video.description,
                 'video_tags':video.keywords,
                 'video_url':video_url,
@@ -47,7 +47,9 @@ class YoutubePost:
         print('Video downloaded!')
 
     def download_thumb(self, thumb_url, directory_name):
-        r = requests.get(thumb_url, stream=True)
+        r = requests.get(thumb_url.replace('sddefault.jpg', 'maxresdefault.jpg'), stream=True)
+        if r.status_code != 200:
+            r = requests.get(thumb_url, stream=True)
         if r.status_code == 200:
             with open(f"./videos/{directory_name}/{directory_name}_thumb.jpg", 'wb') as f:
                 f.write(r.content)
@@ -184,6 +186,7 @@ class YoutubePost:
         print(f'Programmed to {date_to_post} at {hour_to_post}')
         sleep(1)
         #Clicking on upload
+        sleep(TIME_BEFORE_UPLOAD)
         driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[2]/div/div[2]/ytcp-button[3]').click()
         sleep(2)
         print('Video uploaded!\n\n')
@@ -208,9 +211,10 @@ class YoutubePost:
         if videos_urls != False:
             for video in videos_urls:
                 video_number += 1
-                print(f'Video {video_number}')
+                print(f'Video {video_number} | ', end='')
                 hour_to_post, date_to_post, now = self.hour_and_date(now)
-                video_info = self.get_infos(video, hour_post=hour_to_post, date_post=date_to_post)  
+                video_info = self.get_infos(video, hour_post=hour_to_post, date_post=date_to_post)
+                print(f'{video_info["video_title"]}')  
                 if video_info == False:
                     now -= datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
                 else:
@@ -223,9 +227,10 @@ class YoutubePost:
             print('Getting video links from VIDEOS')
             for video in VIDEOS:
                 video_number += 1
-                print(f'Video {video_number}')
+                print(f'Video {video_number} | ', end='')
                 hour_to_post, date_to_post, now = self.hour_and_date(now)
                 video_info = self.get_infos(video, hour_post=hour_to_post, date_post=date_to_post)
+                print(f'{video_info["video_title"]}')
                 if video_info == False:
                     now -= datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
                 else:
