@@ -180,7 +180,7 @@ class YoutubePost:
         input_date.send_keys(date_to_post, Keys.ENTER)
         sleep(1)
         #Clicking on hour
-        driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-uploads-review/div[2]/div[1]/ytcp-video-visibility-select/div[2]/ytcp-visibility-scheduler/div[1]/ytcp-datetime-picker/div/ytcp-text-dropdown-trigger[2]/ytcp-dropdown-trigger/div/div[3]/tp-yt-iron-icon').click()
+        driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-uploads-review/div[2]/div[1]/ytcp-video-visibility-select/div[2]/ytcp-visibility-scheduler/div[1]/ytcp-datetime-picker/div/ytcp-text-dropdown-trigger[2]/ytcp-dropdown-trigger/div/div[2]/span').click()
         sleep(1)
         driver.find_element_by_xpath(hour_xpath).click()
         print(f'Programmed to {date_to_post} at {hour_to_post}')
