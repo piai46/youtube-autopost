@@ -112,7 +112,7 @@ class YoutubePost:
                 if minute == 0:
                     minute = '00'
                 xpath_time += 1
-                hour_xpath.update({f'{hour}:{minute}':f'/html/body/ytcp-time-of-day-picker/tp-yt-paper-dialog/div/div[2]/tp-yt-paper-listbox/tp-yt-paper-item[{xpath_time}]'})
+                hour_xpath.update({f'{hour}:{minute}':f'/html/body/ytcp-time-of-day-picker/tp-yt-paper-dialog/tp-yt-paper-listbox/tp-yt-paper-item[{xpath_time}]'})
         return hour_xpath[input_hour]
 
     def open_firefox(self, infos):
@@ -130,7 +130,7 @@ class YoutubePost:
         profile.update_preferences()
         options = Options()
         #Hide/Unhide browser
-        options.add_argument('--headless')
+        #options.add_argument('--headless')
         driver = webdriver.Firefox(firefox_profile=profile, desired_capabilities=DesiredCapabilities.FIREFOX, options=options)
         ############
         print('Firefox open')

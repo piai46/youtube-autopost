@@ -1,7 +1,7 @@
 
 # Find your mozilla profile path and put here
 # Default: C:\Users\username\AppData\Roaming\Mozilla\Firefox\Profiles
-MOZILLA_PROFILE_PATH = 'C:\\path\\to\\mozilla\\profile\\folder' 
+MOZILLA_PROFILE_PATH = 'C:\\Users\\username\\AppData\\Roaming\\Mozilla\\Firefox\\Profile' 
 
 # Channel to download videos
 CHANNEL = 'https://www.youtube.com/channel/' 
