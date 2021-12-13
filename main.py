@@ -130,7 +130,7 @@ class YoutubePost:
         profile.update_preferences()
         options = Options()
         #Hide/Unhide browser
-        #options.add_argument('--headless')
+        options.add_argument('--headless')
         driver = webdriver.Firefox(firefox_profile=profile, desired_capabilities=DesiredCapabilities.FIREFOX, options=options)
         ############
         print('Firefox open')
@@ -180,9 +180,14 @@ class YoutubePost:
         input_date.send_keys(date_to_post, Keys.ENTER)
         sleep(1)
         #Clicking on hour
-        driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-uploads-review/div[2]/div[1]/ytcp-video-visibility-select/div[2]/ytcp-visibility-scheduler/div[1]/ytcp-datetime-picker/div/ytcp-text-dropdown-trigger[2]/ytcp-dropdown-trigger/div/div[2]/span').click()
-        sleep(1)
-        driver.find_element_by_xpath(hour_xpath).click()
+        try:
+            driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-uploads-review/div[2]/div[1]/ytcp-video-visibility-select/div[2]/ytcp-visibility-scheduler/div[1]/ytcp-datetime-picker/div/ytcp-text-dropdown-trigger[2]/ytcp-dropdown-trigger/div/div[2]/span').click()
+            sleep(1)
+            driver.find_element_by_xpath(hour_xpath).click()
+        except:
+            input_hour = driver.find_element_by_xpath('/html/body/ytcp-uploads-dialog/tp-yt-paper-dialog/div/ytcp-animatable[1]/ytcp-uploads-review/div[2]/div[1]/ytcp-video-visibility-select/div[2]/ytcp-visibility-scheduler/div[1]/ytcp-datetime-picker/div/form/ytcp-form-input-container/div[1]/div/tp-yt-paper-input/tp-yt-paper-input-container/div[2]/div/iron-input/input')
+            input_hour.send_keys(Keys.CONTROL, 'a')
+            input_hour.send_keys(hour_to_post, Keys.ENTER)
         print(f'Programmed to {date_to_post} at {hour_to_post}')
         sleep(1)
         #Clicking on upload
