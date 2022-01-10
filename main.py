@@ -47,7 +47,11 @@ class YoutubePost:
         print('Video downloaded!')
 
     def download_thumb(self, thumb_url, directory_name):
-        r = requests.get(thumb_url.replace('sddefault.jpg', 'maxresdefault.jpg'), stream=True)
+        if 'sddefault.jpg' in thumb_url:
+            thumb_url = thumb_url.replace('sddefault.jpg', 'maxresdefault.jpg')
+        else:
+            thumb_url = thumb_url.replace('hqdefault.jpg', 'maxresdefault.jpg')
+        r = requests.get(thumb_url, stream=True)
         if r.status_code != 200:
             r = requests.get(thumb_url, stream=True)
         if r.status_code == 200:
