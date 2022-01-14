@@ -6,6 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 from pathlib import Path
+from moviepy.editor import VideoFileClip, concatenate_videoclips
 from setting_up import *
 
 class YoutubePost:
@@ -46,14 +47,27 @@ class YoutubePost:
         video.streams.get_highest_resolution().download(output_path=f'./videos/{directory_name}/', filename=f'{directory_name}.mp4')
         print('Video downloaded!')
 
+    def add_intro(self, intro_path, dir_name):
+        print('Adding intro...')
+        intro = VideoFileClip(intro_path)
+        video = VideoFileClip(f'./videos/{dir_name}/{dir_name}.mp4')
+        final_clip = concatenate_videoclips([intro, video])
+        final_clip.write_videofile(f'./videos/{dir_name}/{dir_name}_full.mp4', logger=None)
+        os.remove(f'./videos/{dir_name}/{dir_name}.mp4')
+        print('Intro added to video!')
+
     def download_thumb(self, thumb_url, directory_name):
         if 'sddefault.jpg' in thumb_url:
             thumb_url = thumb_url.replace('sddefault.jpg', 'maxresdefault.jpg')
+            r = requests.get(thumb_url, stream=True)
+            if r.status_code != 200:
+                thumb_url = thumb_url.replace('maxresdefault.jpg', 'mqdefault.jpg')
         else:
             thumb_url = thumb_url.replace('hqdefault.jpg', 'maxresdefault.jpg')
-        r = requests.get(thumb_url, stream=True)
-        if r.status_code != 200:
             r = requests.get(thumb_url, stream=True)
+            if r.status_code != 200:
+                thumb_url = thumb_url.replace('maxresdefault.jpg', 'mqdefault.jpg')
+        r = requests.get(thumb_url, stream=True)
         if r.status_code == 200:
             with open(f"./videos/{directory_name}/{directory_name}_thumb.jpg", 'wb') as f:
                 f.write(r.content)
@@ -228,6 +242,7 @@ class YoutubePost:
                     now -= datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
                 else:
                     directory_name = self.download_and_save(video_info)
+                    self.add_intro(INTRO_PATH, directory_name)
                     informations_to_upload = self.infos_to_upload(directory_name)
                     self.open_firefox(informations_to_upload)
         elif videos_urls == False:
@@ -244,6 +259,7 @@ class YoutubePost:
                     now -= datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
                 else:
                     directory_name = self.download_and_save(video_info)
+                    self.add_intro(INTRO_PATH, directory_name)
                     informations_to_upload = self.infos_to_upload(directory_name)
                     self.open_firefox(informations_to_upload)
         elif len(VIDEOS) == 0:

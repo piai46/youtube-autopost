@@ -9,6 +9,9 @@ CHANNEL = 'https://www.youtube.com/channel/'
 # Add video links, separating them with comma and in quotes
 VIDEOS = []
 
+# To add a intro to video, insert the intro path below:
+INTRO_PATH = 'D:\\Videos\\intro.mp4'
+
 # For the following variables, use 0 for not copy the video information and 1 for copy
 COPY_TITLE = 1 
 COPY_DESC = 1 
