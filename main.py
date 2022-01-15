@@ -242,7 +242,8 @@ class YoutubePost:
                     now -= datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
                 else:
                     directory_name = self.download_and_save(video_info)
-                    self.add_intro(INTRO_PATH, directory_name)
+                    if INTRO_PATH != "":
+                        self.add_intro(INTRO_PATH, directory_name)
                     informations_to_upload = self.infos_to_upload(directory_name)
                     self.open_firefox(informations_to_upload)
         elif videos_urls == False:
@@ -259,7 +260,8 @@ class YoutubePost:
                     now -= datetime.timedelta(seconds=TIME_BETWEEN_POSTS)
                 else:
                     directory_name = self.download_and_save(video_info)
-                    self.add_intro(INTRO_PATH, directory_name)
+                    if INTRO_PATH != "":
+                        self.add_intro(INTRO_PATH, directory_name)
                     informations_to_upload = self.infos_to_upload(directory_name)
                     self.open_firefox(informations_to_upload)
         elif len(VIDEOS) == 0:
