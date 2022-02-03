@@ -51,7 +51,7 @@ class YoutubePost:
         print('Adding intro...')
         intro = VideoFileClip(intro_path)
         video = VideoFileClip(f'./videos/{dir_name}/{dir_name}.mp4')
-        final_clip = concatenate_videoclips([intro, video])
+        final_clip = concatenate_videoclips([intro, video], method='compose')
         final_clip.write_videofile(f'./videos/{dir_name}/{dir_name}_full.mp4', logger=None)
         os.remove(f'./videos/{dir_name}/{dir_name}.mp4')
         print('Intro added to video!')
